@@ -1,411 +1,686 @@
 <!doctype html>
 <html lang="en">
 
-	<head>
-		<meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
 
-		<title>reveal.js – The HTML Presentation Framework</title>
+    <title>Scala is not Java</title>
 
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
+    <meta name="description" content="Some arguments that Scala code doen not need to look like Java without semicolons" />
+    <meta name="author" content="Mateusz Kubuszok" />
 
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <link rel="stylesheet" href="css/reveal.css" />
+    <link rel="stylesheet" href="css/theme/scalac.css" id="theme" />
 
-		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="lib/css/darkula.css" />
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
 
-		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
-		<![endif]-->
-	</head>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
 
-	<body>
+  <body>
 
-		<div class="reveal">
+    <div class="reveal">
 
-			<!-- Any section element inside of this container is displayed as a slide -->
-			<div class="slides">
-				<section>
-					<h1>Reveal.js</h1>
-					<h3>The HTML Presentation Framework</h3>
-					<p>
-						<small>Created by <a href="http://hakim.se">Hakim El Hattab</a> / <a href="http://twitter.com/hakimel">@hakimel</a></small>
-					</p>
-				</section>
+      <div class="slides">
 
-				<section>
-					<h2>Hello There</h2>
-					<p>
-						reveal.js enables you to create beautiful interactive slide decks using HTML. This presentation will show you examples of what it can do.
-					</p>
-				</section>
+        <section>
+          <h1>Scala is not Java</h1>
+          <h3><a href="http://kubuszok.pl">Mateusz Kubuszok</a> <b>&gt;</b> <a href="https://scalac.io">Scalac</a></h3>
+        </section>
 
-				<!-- Example of nested vertical slides -->
-				<section>
-					<section>
-						<h2>Vertical Slides</h2>
-						<p>Slides can be nested inside of each other.</p>
-						<p>Use the <em>Space</em> key to navigate through all slides.</p>
-						<br>
-						<a href="#" class="navigate-down">
-							<img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
-					</section>
-					<section>
-						<h2>Basement Level 1</h2>
-						<p>Nested slides are useful for adding additional detail underneath a high level horizontal slide.</p>
-					</section>
-					<section>
-						<h2>Basement Level 2</h2>
-						<p>That's it, time to go back up.</p>
-						<br>
-						<a href="#/2">
-							<img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="transform: rotate(180deg); -webkit-transform: rotate(180deg);">
-						</a>
-					</section>
-				</section>
+        <section>
+          <h2>Agenda</h2>
+          <ul>
+            <li class="fragment">differences in language</li>
+            <li class="fragment">some FP "design patterns"</li>
+            <li class="fragment">some OOP design patterns</li>
+            <li class="fragment">things that wouldn't work well even in Java</li>
+          </ul>
+        </section>
 
-				<section>
-					<h2>Slides</h2>
-					<p>
-						Not a coder? Not a problem. There's a fully-featured visual editor for authoring these, try it out at <a href="http://slides.com" target="_blank">http://slides.com</a>.
-					</p>
-				</section>
+        <section>
+          <section>
+            <h1>Differences in language</h1>
+          </section>
 
-				<section>
-					<h2>Point of View</h2>
-					<p>
-						Press <strong>ESC</strong> to enter the slide overview.
-					</p>
-					<p>
-						Hold down alt and click on any element to zoom in on it using <a href="http://lab.hakim.se/zoom-js">zoom.js</a>. Alt + click anywhere to zoom back out.
-					</p>
-				</section>
+          <section>
+            <h2>var, val and type inferrence</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">void publish(
+    Message message,
+    Publisher publisher) {
+  Timestamp timestamp = makeTimestamp();
+  publisher.send(message, timestamp);
+}</code></pre></td>
+                <td><pre><code class="hljs scala">def publish(
+    message: Message
+    publisher: Publisher): Unit = {
+  val timestamp = makeTimestamp()
+  publisher.send(message, timestamp)
+}</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes">Mention Michael Feathers's Working with a Legacy Code and how we used final to find bugs in code.</aside>
+          </section>
 
-				<section>
-					<h2>Touch Optimized</h2>
-					<p>
-						Presentations look great on touch devices, like mobile phones and tablets. Simply swipe through your slides.
-					</p>
-				</section>
+          <section>
+            <h2>functions</h2>
+            <pre><code class="hljs scala">def myFun1(int: Int): String = int.toString
+val myFun2: String => String = _.toUpperCase
+val myFun3 = myFun1 andThen myFun2
+List(1, 2, 3).map(myFun3)</code></pre>
+            <aside class="notes"></aside>
+          </section>
 
-				<section data-markdown>
-					<script type="text/template">
-						## Markdown support
+          <section>
+            <h2>pattern matching</h2>
+            <pre><code class="hljs scala">result match {
+  case Left(error)  => handleError(error)
+  case Right(value) => handleResult(value)
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
 
-						Write content using inline or external Markdown.
-						Instructions and more info available in the [readme](https://github.com/hakimel/reveal.js#markdown).
+          <section>
+            <h2>traits: sealed, ADT, mixins</h2>
+            <pre><code class="hljs scala">sealed trait Stack[T]
+case object Empty[T] extends Stack[T]
+case class Top[T](value: T, next: Stack[T])
 
-						```
-						<section data-markdown>
-						  ## Markdown support
+class Printer {
+  def result: List[Either[String, String]] = ???
+  def print: Unit = result.foreach(println)
+}
+trait ErrorFilter { self: Printer => def result = super.result.filter(_.isRight) }
+trait OutputLimiter { self: Printer => def result = super.result.take(20) }
+new ResultPrinter with ErrorFilter with OutputLimiter</code></pre>
+            <aside class="notes"></aside>
+          </section>
 
-						  Write content using inline or external Markdown.
-						  Instructions and more info available in the [readme](https://github.com/hakimel/reveal.js#markdown).
-						</section>
-						```
-					</script>
-				</section>
+          <section>
+            <h2>immutable data structures</h2>
+            <pre><code class="hljs scala">case class Cheese(name: String, weightInG: Double)
+val cheese1 = Cheese("Gouda", 12.6)
+val cheese2 = cheese1.copy(name = "Cheddar")
 
-				<section>
-					<section id="fragments">
-						<h2>Fragments</h2>
-						<p>Hit the next arrow...</p>
-						<p class="fragment">... to step through ...</p>
-						<p><span class="fragment">... a</span> <span class="fragment">fragmented</span> <span class="fragment">slide.</span></p>
+val list1 = "a" :: "b" :: "c" :: Nil
+val list2 = list1 ++ List("d", "e", "f")</code></pre>
+            <aside class="notes"></aside>
+          </section>
 
-						<aside class="notes">
-							This slide has fragments which are also stepped through in the notes window.
-						</aside>
-					</section>
-					<section>
-						<h2>Fragment Styles</h2>
-						<p>There's different types of fragments, like:</p>
-						<p class="fragment grow">grow</p>
-						<p class="fragment shrink">shrink</p>
-						<p class="fragment fade-out">fade-out</p>
-						<p class="fragment current-visible">current-visible</p>
-						<p class="fragment highlight-red">highlight-red</p>
-						<p class="fragment highlight-blue">highlight-blue</p>
-					</section>
-				</section>
-
-				<section id="transitions">
-					<h2>Transition Styles</h2>
-					<p>
-						You can select from different transitions, like: <br>
-						<a href="?transition=none#/transitions">None</a> -
-						<a href="?transition=fade#/transitions">Fade</a> -
-						<a href="?transition=slide#/transitions">Slide</a> -
-						<a href="?transition=convex#/transitions">Convex</a> -
-						<a href="?transition=concave#/transitions">Concave</a> -
-						<a href="?transition=zoom#/transitions">Zoom</a>
-					</p>
-				</section>
-
-				<section id="themes">
-					<h2>Themes</h2>
-					<p>
-						reveal.js comes with a few themes built in: <br>
-						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/black.css'); return false;">Black (default)</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/white.css'); return false;">White</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/league.css'); return false;">League</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/sky.css'); return false;">Sky</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/beige.css'); return false;">Beige</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/simple.css'); return false;">Simple</a> <br>
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/serif.css'); return false;">Serif</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/blood.css'); return false;">Blood</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/night.css'); return false;">Night</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/moon.css'); return false;">Moon</a> -
-						<a href="#" onclick="document.getElementById('theme').setAttribute('href','css/theme/solarized.css'); return false;">Solarized</a>
-					</p>
-				</section>
-
-				<section>
-					<section data-background="#dddddd">
-						<h2>Slide Backgrounds</h2>
-						<p>
-							Set <code>data-background="#dddddd"</code> on a slide to change the background color. All CSS color formats are supported.
-						</p>
-						<a href="#" class="navigate-down">
-							<img width="178" height="238" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
-					</section>
-					<section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/image-placeholder.png">
-						<h2>Image Backgrounds</h2>
-						<pre><code class="hljs">&lt;section data-background="image.png"&gt;</code></pre>
-					</section>
-					<section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/image-placeholder.png" data-background-repeat="repeat" data-background-size="100px">
-						<h2>Tiled Backgrounds</h2>
-						<pre><code class="hljs" style="word-wrap: break-word;">&lt;section data-background="image.png" data-background-repeat="repeat" data-background-size="100px"&gt;</code></pre>
-					</section>
-					<section data-background-video="https://s3.amazonaws.com/static.slid.es/site/homepage/v1/homepage-video-editor.mp4,https://s3.amazonaws.com/static.slid.es/site/homepage/v1/homepage-video-editor.webm" data-background-color="#000000">
-						<div style="background-color: rgba(0, 0, 0, 0.9); color: #fff; padding: 20px;">
-							<h2>Video Backgrounds</h2>
-							<pre><code class="hljs" style="word-wrap: break-word;">&lt;section data-background-video="video.mp4,video.webm"&gt;</code></pre>
-						</div>
-					</section>
-					<section data-background="http://i.giphy.com/90F8aUepslB84.gif">
-						<h2>... and GIFs!</h2>
-					</section>
-				</section>
-
-				<section data-transition="slide" data-background="#4d7e65" data-background-transition="zoom">
-					<h2>Background Transitions</h2>
-					<p>
-						Different background transitions are available via the backgroundTransition option. This one's called "zoom".
-					</p>
-					<pre><code class="hljs">Reveal.configure({ backgroundTransition: 'zoom' })</code></pre>
-				</section>
-
-				<section data-transition="slide" data-background="#b5533c" data-background-transition="zoom">
-					<h2>Background Transitions</h2>
-					<p>
-						You can override background transitions per-slide.
-					</p>
-					<pre><code class="hljs" style="word-wrap: break-word;">&lt;section data-background-transition="zoom"&gt;</code></pre>
-				</section>
-
-				<section>
-					<h2>Pretty Code</h2>
-					<pre><code class="hljs" data-trim contenteditable>
-function linkify( selector ) {
-  if( supports3DTransforms ) {
-
-    var nodes = document.querySelectorAll( selector );
-
-    for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
-      var node = nodes[i];
-
-      if( !node.className ) {
-        node.className += ' roll';
-      }
+          <section>
+            <h2>for comprehension</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs scala">for {
+  i <- List(1, 2, 3)
+  j <- List(4, 5, 6)
+  k <- List(7, 8, 9)
+} yield i * j * k</code></pre></td>
+                <td><pre><code class="hljs scala">List(1, 2, 3) flatMap { i =>
+  List(4, 5, 6) flatMap { j =>
+    List(7, 8, 9) map { k =>
+      i * j * k
     }
   }
+}</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>Implicits</h2>
+            <pre><code class="hljs scala">implicit val context: ExecutionContext = ...
+def asyncResult(implicit ec: ExecutionContext): Future[String] = ???
+
+implicit class StringDecorator(string: String) {
+  
+  def cleanString = string.toLowerCase.trim
 }
-					</code></pre>
-					<p>Code syntax highlighting courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
-				</section>
 
-				<section>
-					<h2>Marvelous List</h2>
-					<ul>
-						<li>No order here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-					</ul>
-				</section>
+trait Nat[N <: Nat]
+case object Zero extends Nat[Zero]
+case class Succ[N <: Nat](value: N) extends Nat[Nat[N]]
+implicit val natZero: Nat[Zero] = Zero
+implicit def natSucc[N <: Nat](implicit nat: N): Nat[N] = Succ(n)
+implicitly[Nat[Nat[Nat[Nat[Zero]]]]]
 
-				<section>
-					<h2>Fantastic Ordered List</h2>
-					<ol>
-						<li>One is smaller than...</li>
-						<li>Two is smaller than...</li>
-						<li>Three!</li>
-					</ol>
-				</section>
+def fun1[A, TypeClass[A]](value: A)(implicit: fa: TypeClass[A]): A = ...
+def fun2[A : TypeClass](value: A): A = ...</code></pre>
+            <aside class="notes"></aside>
+          </section>
+        </section>
 
-				<section>
-					<h2>Tabular Tables</h2>
-					<table>
-						<thead>
-							<tr>
-								<th>Item</th>
-								<th>Value</th>
-								<th>Quantity</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Apples</td>
-								<td>$1</td>
-								<td>7</td>
-							</tr>
-							<tr>
-								<td>Lemonade</td>
-								<td>$2</td>
-								<td>18</td>
-							</tr>
-							<tr>
-								<td>Bread</td>
-								<td>$3</td>
-								<td>2</td>
-							</tr>
-						</tbody>
-					</table>
-				</section>
+        <section>
+          <section>
+            <h1>FP design patterns</h1>
+            <aside class="notes">andthen, orelse, currying, functor, applicative, monad, arrow, lenses, ADT</aside>
+          </section>
+          
+          <section>
+            <h2>function composition</h2>
+            <td><pre><code class="hljs scala">def parseXml(input: String): XmlDocument
+def getUserDataNode(document: XmlDocument): XmlNode
+def extractUserData(node: XmlNode): MyUserData
 
-				<section>
-					<h2>Clever Quotes</h2>
-					<p>
-						These guys come in two forms, inline: <q cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-						&ldquo;The nice thing about standards is that there are so many to choose from&rdquo;</q> and block:
-					</p>
-					<blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-						&ldquo;For years there has been a theory that millions of monkeys typing at random on millions of typewriters would
-						reproduce the entire works of Shakespeare. The Internet has proven this theory to be untrue.&rdquo;
-					</blockquote>
-				</section>
+val extractUserDataFromInput = parseXml andThen
+                               getUserDataNode andThen
+                               extractUserData
 
-				<section>
-					<h2>Intergalactic Interconnections</h2>
-					<p>
-						You can link between slides internally,
-						<a href="#/2/3">like this</a>.
-					</p>
-				</section>
+val handleSome: PartialFunction[Option[String], Unit] = {
+  case Some(result) => println(s"Result is $result")
+}
+val handleNone: PartialFunction[Option[String], Unit] = {
+  case None => println(s"There is no result")
+}
 
-				<section>
-					<h2>Speaker View</h2>
-					<p>There's a <a href="https://github.com/hakimel/reveal.js#speaker-notes">speaker view</a>. It includes a timer, preview of the upcoming slide as well as your speaker notes.</p>
-					<p>Press the <em>S</em> key to try it out.</p>
+val handleOption = handleSome orElse handleNone</code></pre></td>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>typeclasses</h2>
+            <pre><code class="hljs scala">trait MyTypeclass[A] {
+  def prettyString(printed: A): String
+}
 
-					<aside class="notes">
-						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
-					</aside>
-				</section>
+implicit def typeclassForMap[K, V] = new MyTypeclass[Map[K, V]] {
+  def prettyString(printed: Map[K, V]) =
+    printed map { case (k, v) => s"($k -> $v)" } mkString "; "
+}
+implicit def typeclassForList[B] = new MyTypeclass[List[B]] {
+  def prettyString(printed: List[B]) = s"(${printed mkString ", "})"
+}
 
-				<section>
-					<h2>Export to PDF</h2>
-					<p>Presentations can be <a href="https://github.com/hakimel/reveal.js#pdf-export">exported to PDF</a>, here's an example:</p>
-					<iframe src="https://www.slideshare.net/slideshow/embed_code/42840540" width="445" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:3px solid #666; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
-				</section>
+def printMe[A](toPrint: A)(implicit myTypeClass: MyTypeclass[A]) =
+  myTypeClass.prettyString(toPrint)
+// alternatively
+def printMe[A : MyTypeclass](toPrint: A) =
+  implicitly[MyTypeclass[A]].prettyString(toPrint)
 
-				<section>
-					<h2>Global State</h2>
-					<p>
-						Set <code>data-state="something"</code> on a slide and <code>"something"</code>
-						will be added as a class to the document element when the slide is open. This lets you
-						apply broader style changes, like switching the page background.
-					</p>
-				</section>
+printMe(List(1, 2, 3)) // (1, 2, 3)
+printMe(Map(1 -> 2, 3 -> 4)) // (1 -> 2); (3 -> 4)</code></pre>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>semigroup</h2>
+            <pre><code class="hljs scala">trait Semigroup[A] {
+  def combine(a1: A, a2: A): A
+}
 
-				<section data-state="customevent">
-					<h2>State Events</h2>
-					<p>
-						Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
-					</p>
-					<pre><code class="javascript" data-trim contenteditable style="font-size: 18px;">
-Reveal.addEventListener( 'customevent', function() {
-	console.log( '"customevent" has fired' );
-} );
-					</code></pre>
-				</section>
+def listSemigroup[A] = new Semigroup[List[A]] {
+  def combine(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>monoid</h2>
+            <pre><code class="hljs scala">trait Monoid[A] extends Semigroup[A] {
+  def zero: A
+}
 
-				<section>
-					<h2>Take a Moment</h2>
-					<p>
-						Press B or . on your keyboard to pause the presentation. This is helpful when you're on stage and want to take distracting slides off the screen.
-					</p>
-				</section>
+def listMonoid[A] = new Semigroup[List[A]] {
+  def combine(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
+  def zero: List[A] = List.empty
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>functor</h2>
+            <pre><code class="hljs scala">trait Functor[F[_]] {
+  def map[A, B](f: F[A], fun: A => B): F[B]
+}
 
-				<section>
-					<h2>Much more</h2>
-					<ul>
-						<li>Right-to-left support</li>
-						<li><a href="https://github.com/hakimel/reveal.js#api">Extensive JavaScript API</a></li>
-						<li><a href="https://github.com/hakimel/reveal.js#auto-sliding">Auto-progression</a></li>
-						<li><a href="https://github.com/hakimel/reveal.js#parallax-background">Parallax backgrounds</a></li>
-						<li><a href="https://github.com/hakimel/reveal.js#keyboard-bindings">Custom keyboard bindings</a></li>
-					</ul>
-				</section>
+def listFunctor[A] = new Functor[List] {
+  def map[A, B](f: List[A], fun: A => B): List[B] = f map fun
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>monad</h2>
+            <pre><code class="hljs scala">trait Monad[F[_]] extends Functor[F] {
+  def unit[A](a: A): F[A]
+  def flatMap[A, B](f: F[A], fun: A => F[B]): F[B]
+}
 
-				<section style="text-align: left;">
-					<h1>THE END</h1>
-					<p>
-						- <a href="http://slides.com">Try the online editor</a> <br>
-						- <a href="https://github.com/hakimel/reveal.js">Source code &amp; documentation</a>
-					</p>
-				</section>
+def listFunctor[A] = new Monad[List] {
+  def map[A, B](f: List[A], fun: A => B): List[B] = f map fun
+  def unit[A](a: A): List[A] = List(a)
+  def flatMap[A, B](f: List[A], fun: A => List[B]): List[B] = f flatMap fun
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
+          
+          <section>
+            <h2>other useful concepts</h2>
+            <ul>
+              <li class="fragment">applicative functors</li>
+              <li class="fragment">arrows</li>
+              <li class="fragment">lenses</li>
+              <li class="fragment">prisms</li>
+              <li class="fragment">prisms</li>
+              <li class="fragment">recursive schemes</li>
+              <li class="fragment">...</li>
+            </ul>
+            <aside class="notes"></aside>
+          </section>
+        </section>
 
-			</div>
+        <section>
+          <section>
+            <h1>OOP design patterns</h1>
+            <aside class="notes">decoupling of data vs decoupling of behavior</aside>
+          </section>
 
-		</div>
+          <section>
+            <h2>abstract factory/factory method</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">class ConfigFactory {
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+  MyConfig createConfig(
+      Boolean isDebug,
+      Set&lt;String&gt;: flags) { ... }
+}
 
-		<script>
+new ConfigFactory()
+    .createConfig(isDebug, flags);
+</code></pre></td>
+                <td><pre><code class="hljs scala">def createConfig(
+    isDebug: Boolean,
+    flags: Set[String]): MyConfig = { ... }
 
-			// Full list of configuration options available at:
-			// https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				history: true,
-				center: true,
+createConfig(isDebug, flags)</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
 
-				transition: 'slide', // none/fade/slide/convex/concave/zoom
+          <section>
+            <h2>builder</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">StringBuilder sb = new StringBuilder()
+for (String line : fileContent) {
+  sb.append("line: ")
+    .append(line)
+    .append("\n");
+}
+String result = sb.toString;</code></pre></td>
+                <td><pre><code class="hljs scala">val result =
+fileContent.foldLeft(List.empty[String]) {
+  case (result, line) =>
+    result :+ "line: " :+ line
+} mkString "\n"</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
 
-				// Optional reveal.js plugins
-				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
-				]
-			});
+          <section>
+            <h2>builder</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">interface MyConfig {
+  Boolean isDebig();
+  Set&lt;String&gt; getFlags();
+}
 
-		</script>
+class MyConfigBuilder {
+  MyConfigBuilder setDebug(
+      Boolean isDebug) { ... }
+  MyConfigBuilder setFlags(
+      Set&lt;String&gt; flags) { ... }
+  MyConfig build() { ... }
+}
 
-	</body>
+new MyConfigBuilder()
+    .setDebug(true)
+    .setFlags(flags)
+    .build();</code></pre></td>
+                <td><pre><code class="hljs scala">case class MyConfig(
+      isDebug: Boolean = false,
+      flags: Set[String] = Set.empty)
+
+MyConfig().copy(isDebug = true, flags = flags)
+// or MyConfig(isDebug = true, flags = flags)
+// or MyConfig(isDebug = true).copy(flags = flags)
+// etc</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>lazy initialization</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">interface X {
+  String getResult;
+}
+
+class LazyXProxy {
+  private X inner = null;
+
+  private X getX() {
+    if (inner == null)
+      inner = ...;;
+    return X;
+  }
+
+  String getResult() {
+    return getX.getResult();
+  }
+}</code></pre></td>
+                <td><pre><code class="hljs scala">trait X {
+  def getResult: String
+}
+
+lazy val lazyX: X = ...</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>singleton</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">class Singleton {
+  private static Singleton self = null;
+
+  private Singleton() {}
+
+  public static Singleton get() {
+    // this should be synchronized!
+    if (self == null)
+      self = new Singleton();
+    return self;
+  }
+}</code></pre></td>
+                <td><pre><code class="hljs scala">object Singleton</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>command object</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">interface Command {
+  void execute(target: Data);
+}
+
+class UpdateDataCommand extends Command {
+  void execute(target: Data) { ... } 
+}</code></pre></td>
+                <td><pre><code class="hljs scala">trait Command extends (Data => Unit)
+
+case object UpdateData extends Command {
+  def apply(target: Data): Unit = { ... }
+}</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes">also mention servant</aside>
+          </section>
+
+          <section>
+            <h2>observer</h2>
+            <ul>
+              <li class="fragment">futures</li>
+              <li class="fragment">reactive programming in general</li>
+              <li class="fragment"><pre><code class="hljs scala">import rx._
+
+val a = Var(1); val b = Var(2)
+val c = Rx { a() + b() }
+println(c.now) // 3
+a() = 4
+println(c.now) // 6</code></pre></li>
+            </ul>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>decorator</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">interface X {
+  String getResult();
+}
+
+class XDecorator {
+  private X x;
+  XDecorator(X x) { this.x = x; }
+
+  String getResult() {
+    return x.getResult();
+  }
+
+  String getResultUpper() {
+    return getResult().toUpperCase();
+  }
+}</code></pre></td>
+                <td><pre><code class="hljs scala">trait X {
+  def getResult: String
+}
+
+implicit class XDecorator(x: X) {
+  def getResultUpper = x.getResult.toUpperCase
+}</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>template method</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">abstract class SeriousOperations {
+  void doSeriousStuff() {
+    // doing things
+    String nextResult =
+        templateMethod(resultSoFar);
+    // doing more things
+  }
+
+  abstract String templateMethod(
+      String resultSoFar);
+}
+class Implementation
+    extends SeriousOperations {
+  String templateMethod(
+      String resultSoFar) { ... }
+}</code></pre></td>
+                <td><pre><code class="hljs scala">def seriousOperations(
+  template: String => String
+): Unit = {
+  // doing things
+  val nextResult = template(resultSoFar);
+  // doing more things
+}</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>strategy</h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java">interface PrintStrategy {
+  String print(Data data);
+}
+class XmlPrintStrategy
+    extends PrintStrategy {
+  String print(Data data) { ... }
+}
+class JsonPrintStrategy
+    extends PrintStrategy {
+  String print(Data data) { ... }
+}</code></pre></td>
+                <td><pre><code class="hljs scala">val printXMl: Data => String = ...
+val printJson: Data => String = ...</code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>interpreter</h2>
+            <pre><code class="hljs scala">sealed trait CalcDSL[T]
+object CalcDSL {
+  case class AskForInput(question: String) extends CalcDSL[Integer]
+  case class PrintResult(result: String) extends CalcDSL[Unit]
+  case class Add(i: Integer, j: Integer) extends CalcDSL[Integer]
+  case class Mul(i: Integer, j: Integer) extends CalcDSL[Integer]
+
+  class Ops {
+    def askForInput(question: String) = Free.liftF(AskForInput(question))
+    def printResult(result: String) = Free.liftF(PrintResult(result))
+    def add(i: Integer, j: Integer) = Free.liftF(Add(i: Integer, j: Integer))
+    def mul(i: Integer, j: Integer) = Free.liftF(Mul(i: Integer, j: Integer))
+  }
+}</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>interpreter</h2>
+            <pre><code class="hljs scala">val interpreter = new (CalcDSL ~> Id) {
+              def apply[A](in: CalcDSL[A]): A = in match {
+                case AskForInput(question) => println(question); StdIn.readInt()
+                case PrintResult(result)   => println(result)
+                case Add(i, j)             => i + j
+                case Mul(i, j)             => i * j
+              }
+            }</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>interpreter</h2>
+            <pre><code class="hljs scala">val ops = new CalcDSL.Ops
+val program = for {
+  a <- ops.askForInput("a =")
+  b <- ops.askForInput("b =")
+  c <- ops.add(a, b)
+  _ <- ops.printResult(s"a + b = $c")
+  d <- ops.mul(a, b)
+  _ <- ops.printResult(s"a * b = $d")
+} yield (c, d)
+
+val (c, d) = program.foldMap(interpreter)</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+        </section>
+
+        <section>
+          <section>
+            <h1>macros and type-level</h1>
+          </section>
+
+          <section>
+            <h2></h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java"></code></pre></td>
+                <td><pre><code class="hljs scala"></code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+        </section>
+
+        <section>
+          <section>
+            <h1>good style</h1>
+            <aside class="notes">solid, null, deep inheritance, no need of mocks</aside>
+          </section>
+
+          <section>
+            <h2></h2>
+            <table>
+              <tr>
+                <td><pre><code class="hljs java"></code></pre></td>
+                <td><pre><code class="hljs scala"></code></pre></td>
+              </tr>
+            </table>
+            <aside class="notes"></aside>
+          </section>
+
+        </section>
+
+        <section>
+          <h2>Summary</h2>
+          <ul>
+            <li class="fragment">S</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Questions?</h2>
+        </section>
+
+        <section>
+          <h2>Thank you!</h2>
+        </section>
+
+      </div>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
 </html>
