@@ -166,6 +166,14 @@ def fun1[A, TypeClass[A]](value: A)(implicit: fa: TypeClass[A]): A = ...
 def fun2[A : TypeClass](value: A): A = ...</code></pre>
             <aside class="notes"></aside>
           </section>
+
+          <section>
+            <h2>useful sources</h2>
+            <ul>
+              <li class="fragment"><a href="https://www.coursera.org/learn/progfun1">Functional Programming Principles in Scala</a> - Martin Odersky</li>
+              <li class="fragment"><a href="https://www.manning.com/books/functional-programming-in-scala">Functional Programming in Scala</a> - Paul Chiusano and Rúnar Bjarnason</li>
+            </ul>
+          </section>
         </section>
 
         <section>
@@ -279,11 +287,19 @@ def listFunctor[A] = new Monad[List] {
               <li class="fragment">arrows</li>
               <li class="fragment">lenses</li>
               <li class="fragment">prisms</li>
-              <li class="fragment">prisms</li>
               <li class="fragment">recursive schemes</li>
               <li class="fragment">...</li>
             </ul>
             <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>useful sources</h2>
+            <ul>
+              <li class="fragment"><a href="https://www.manning.com/books/functional-programming-in-scala">Functional Programming in Scala</a> - Paul Chiusano and Rúnar Bjarnason</li>
+              <li class="fragment"><a href="https://leanpub.com/mastering-advanced-scala">Mastering Advanced Scala</a> - Denis Kalinin</li>
+              <li class="fragment"><a href="http://fsharpforfunandprofit.com/fppatterns/">Functional Programming Design Patterns</a> - Scott Wlaschin</li>
+            </ul>
           </section>
         </section>
 
@@ -570,13 +586,13 @@ object CalcDSL {
           <section>
             <h2>interpreter</h2>
             <pre><code class="hljs scala">val interpreter = new (CalcDSL ~> Id) {
-              def apply[A](in: CalcDSL[A]): A = in match {
-                case AskForInput(question) => println(question); StdIn.readInt()
-                case PrintResult(result)   => println(result)
-                case Add(i, j)             => i + j
-                case Mul(i, j)             => i * j
-              }
-            }</code></pre>
+  def apply[A](in: CalcDSL[A]): A = in match {
+    case AskForInput(question) => println(question); StdIn.readInt()
+    case PrintResult(result)   => println(result)
+    case Add(i, j)             => i + j
+    case Mul(i, j)             => i * j
+  }
+}</code></pre>
             <aside class="notes"></aside>
           </section>
 
@@ -596,6 +612,13 @@ val (c, d) = program.foldMap(interpreter)</code></pre>
             <aside class="notes"></aside>
           </section>
 
+          <section>
+            <h2>useful sources</h2>
+            <ul>
+              <li class="fragment"><a href="https://www.scala-lang.org/old/sites/default/files/FrederikThesis.pdf">Scala &amp; Design Patterns</a> - Fredrik Skeel Løkke</li>
+              <li class="fragment">and tons of articles</li>
+            </ul>
+          </section>
         </section>
 
         <section>
@@ -604,32 +627,86 @@ val (c, d) = program.foldMap(interpreter)</code></pre>
           </section>
 
           <section>
-            <h2></h2>
-            <table>
-              <tr>
-                <td><pre><code class="hljs java"></code></pre></td>
-                <td><pre><code class="hljs scala"></code></pre></td>
-              </tr>
-            </table>
+            <h2>example of macro generated code</h2>
+            <pre><code class="hljs scala">import play.api.libs.json._
+
+case class Resident(name: String, age: Int, role: Option[String])
+implicit val residentFormat = Json.format[Resident]
+
+val resident = Resident(name="Fiver", age=4, role=None)
+val residentJson: JsValue = Json.toJson(resident)
+
+val jsonString: JsValue = Json.parse("""{
+                                       |  "name" : "Fiver",
+                                       |  "age" : 4
+                                       |}""".stripMargin)
+val residentFromJson: JsResult[Resident] = Json.fromJson[Resident](jsonString)
+residentFromJson match {
+  case JsSuccess(r: Resident, path: JsPath) => println("Name: " + r.name)
+  case e: JsError => println("Errors: " + JsError.toJson(e).toString())
+}</code></pre>
             <aside class="notes"></aside>
           </section>
 
+          <section>
+            <h2>example of type-level achievements</h2>
+            <pre><code class="hljs scala">import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
+
+sealed trait Foo
+case class Bar(xs: List[String]) extends Foo
+case class Qux(i: Int, d: Option[Double]) extends Foo
+
+val foo: Foo = Qux(13, Some(14.0))
+
+foo.asJson.noSpaces
+// res0: String = {"Qux":{"i":13,"d":14.0}}
+
+decode[Foo](foo.asJson.spaces4)
+// res1: Either[io.circe.Error,Foo]</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>useful sources</h2>
+            <ul>
+              <li class="fragment"><a href="http://docs.scala-lang.org/overviews/macros/overview.html">Macros</a> - Scala Documentation</li>
+              <li class="fragment"><a href="http://underscore.io/books/shapeless-guide/">The Type Astronaut’s Guide to Shapeless</a> - Dave Gurnell</li>
+            </ul>
+          </section>
         </section>
 
         <section>
           <section>
-            <h1>good style</h1>
+            <h1>don't port bad practices ported from Java</h1>
             <aside class="notes">solid, null, deep inheritance, no need of mocks</aside>
           </section>
 
           <section>
-            <h2></h2>
-            <table>
-              <tr>
-                <td><pre><code class="hljs java"></code></pre></td>
-                <td><pre><code class="hljs scala"></code></pre></td>
-              </tr>
-            </table>
+            <h2>for DI rely on types instead of reflection</h2>
+            <pre><code class="hljs scala">bind(classOf[Dependency])
+    .to(classOf[DependencyImpl])
+class Component @Inject (deps: Dependency) {}
+// what if Dependency is abstract
+// and you forgot to configure:
+// - providers,
+// - bindings,
+// - etc?
+
+// why not simply?
+new Component(dependency)</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>there is no statements, only expressions</h2>
+            <pre><code class="hljs java"></code></pre>
+            <ul>
+              <li class="fragment">deep hierarchies</li>
+              <li class="fragment">classes breaking SOLID principles</li>
+            </ul>
             <aside class="notes"></aside>
           </section>
 
