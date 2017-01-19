@@ -46,20 +46,20 @@
         <section>
           <h2>Agenda</h2>
           <ul>
-            <li class="fragment">differences in language</li>
+            <li class="fragment">Scala's features</li>
             <li class="fragment">some FP "design patterns"</li>
             <li class="fragment">some OOP design patterns</li>
-            <li class="fragment">things that wouldn't work well even in Java</li>
+            <li class="fragment">(not) porting Java approach to Scala</li>
           </ul>
         </section>
 
         <section>
           <section>
-            <h1>Differences in language</h1>
+            <h1>Scala's features</h1>
           </section>
 
           <section>
-            <h2>var, val and type inferrence</h2>
+            <h2>var, val and type inference</h2>
             <table>
               <tr>
                 <td><pre class="fragment"><code class="hljs java">void publish(
@@ -145,18 +145,20 @@ val list2 = list1 ++ List("d", "e", "f")</code></pre>
 
           <section>
             <h2>Implicits</h2>
-            <pre class="fragment"><code class="hljs scala">implicit val context: ExecutionContext = ...
+            <pre class="fragment"><code class="hljs scala">implicit val executionContext: ExecutionContext = ...
 def asyncResult(implicit ec: ExecutionContext): Future[String] = ???</code></pre>
             <pre class="fragment"><code class="hljs scala">implicit class StringDecorator(string: String) {
   def cleanString = string.toLowerCase.trim
 }
-"my string".cleanString</code></pre>
-            <pre class="fragment"><code class="hljs scala">trait Nat[N <: Nat]
-case object Zero extends Nat[Zero]
-case class Succ[N <: Nat](value: N) extends Nat[Nat[N]]
-implicit val natZero: Nat[Zero] = Zero
-implicit def natSucc[N <: Nat](implicit nat: N): Nat[N] = Succ(n)
-implicitly[Nat[Nat[Nat[Nat[Zero]]]]]</code></pre>
+"  MY STRING  ".cleanString</code></pre>
+            <pre class="fragment"><code class="hljs scala">sealed trait Nat
+case object Zero extends Nat
+case class Succ[N <: Nat](value: N) extends Nat
+
+implicit val natZero: Zero = Zero
+implicit def natSucc[N <: Nat](implicit nat: N): Succ[N] = Succ(n)
+
+implicitly[Succ[Succ[Succ[Zero]]]] // Succ(Succ(Succ(Zero)))</code></pre>
             <pre class="fragment"><code class="hljs scala">def fun1[A](value: A)(implicit: fa: TypeClass[A]): A = ...
 def fun2[A : TypeClass](value: A): A = ...</code></pre>
             <aside class="notes"></aside>
@@ -198,7 +200,7 @@ val handleOption = handleSome orElse handleNone</code></pre></td>
           </section>
           
           <section>
-            <h2>typeclasses</h2>
+            <h2>type classes</h2>
             <pre class="fragment"><code class="hljs scala">trait MyTypeclass[A] {
   def prettyString(printed: A): String
 }</code></pre>
@@ -330,7 +332,7 @@ createConfig(isDebug, flags)</code></pre></td>
             <h2>builder</h2>
             <table>
               <tr>
-                <td><pre class="fragment"><code class="hljs java">StringBuilder sb = new StringBuilder()
+                <td><pre class="fragment"><code class="hljs java">StringBuilder sb = new StringBuilder();
 for (String line : fileContent) {
   sb.append("line: ")
     .append(line)
@@ -369,8 +371,8 @@ new MyConfigBuilder()
     .setFlags(flags)
     .build();</code></pre></td>
                 <td><pre class="fragment"><code class="hljs scala">case class MyConfig(
-      isDebug: Boolean = false,
-      flags: Set[String] = Set.empty)
+    isDebug: Boolean = false,
+    flags: Set[String] = Set.empty)
 
 MyConfig().copy(isDebug = true, flags = flags)
 // or MyConfig(isDebug = true, flags = flags)
@@ -394,7 +396,7 @@ class LazyXProxy {
 
   private X getX() {
     if (inner == null)
-      inner = ...;;
+      inner = ...;
     return X;
   }
 
@@ -460,7 +462,7 @@ case object UpdateData extends Command {
             <ul>
               <li class="fragment">futures</li>
               <li class="fragment">reactive programming in general</li>
-              <li class="fragment"><pre class="fragment"><code class="hljs scala">import rx._
+              <li class="fragment"><pre><code class="hljs scala">import rx._
 
 val a = Var(1); val b = Var(2)
 val c = Rx { a() + b() }
@@ -518,7 +520,7 @@ implicit class XDecorator(x: X) {
   abstract String templateMethod(
       String resultSoFar);
 }
-class Implementation
+class SeriousImplementation
     extends SeriousOperations {
   String templateMethod(
       String resultSoFar) { ... }
@@ -561,16 +563,18 @@ val printJson: Data => String = ...</code></pre></td>
             <h2>interpreter</h2>
             <pre class="fragment"><code class="hljs scala">sealed trait CalcDSL[T]
 object CalcDSL {
-  case class AskForInput(question: String) extends CalcDSL[Integer]
+  case class AskForInput(question: String) extends CalcDSL[Int]
   case class PrintResult(result: String) extends CalcDSL[Unit]
-  case class Add(i: Integer, j: Integer) extends CalcDSL[Integer]
-  case class Mul(i: Integer, j: Integer) extends CalcDSL[Integer]
+  case class Add(i: Int, j: Int) extends CalcDSL[Int]
+  case class Mul(i: Int, j: Int) extends CalcDSL[Int]
 
   class Ops {
-    def askForInput(question: String) = Free.liftF(AskForInput(question))
-    def printResult(result: String) = Free.liftF(PrintResult(result))
-    def add(i: Integer, j: Integer) = Free.liftF(Add(i: Integer, j: Integer))
-    def mul(i: Integer, j: Integer) = Free.liftF(Mul(i: Integer, j: Integer))
+    def askForInput(question: String): Free[CalcDSL, Int] =
+        Free.liftF(AskForInput(question))
+    def printResult(result: String): Free[CalcDSL, Unit] =
+        Free.liftF(PrintResult(result))
+    def add(i: Int, j: Int): Free[CalcDSL, Int] = Free.liftF(Add(i: Int, j: Int))
+    def mul(i: Int, j: Int): Free[CalcDSL, Int] = Free.liftF(Mul(i: Int, j: Int))
   }
 }</code></pre>
             <aside class="notes"></aside>
@@ -580,10 +584,10 @@ object CalcDSL {
             <h2>interpreter</h2>
             <pre class="fragment"><code class="hljs scala">val interpreter = new (CalcDSL ~> Id) {
   def apply[A](in: CalcDSL[A]): A = in match {
-    case AskForInput(question) => println(question); StdIn.readInt()
-    case PrintResult(result)   => println(result)
-    case Add(i, j)             => i + j
-    case Mul(i, j)             => i * j
+    case CalcDSL.AskForInput(question) => println(question); StdIn.readInt()
+    case CalcDSL.PrintResult(result)   => println(result)
+    case CalcDSL.Add(i, j)             => i + j
+    case CalcDSL.Mul(i, j)             => i * j
   }
 }</code></pre>
             <aside class="notes"></aside>
@@ -592,9 +596,9 @@ object CalcDSL {
           <section>
             <h2>interpreter</h2>
             <pre class="fragment"><code class="hljs scala">val ops = new CalcDSL.Ops
-val program = for {
-  a <- ops.askForInput("a =")
-  b <- ops.askForInput("b =")
+val program: Free[CalcDSL, (Int, Int)] = for {
+  a <- ops.askForInput("a = ")
+  b <- ops.askForInput("b = ")
   c <- ops.add(a, b)
   _ <- ops.printResult(s"a + b = $c")
   d <- ops.mul(a, b)
@@ -624,7 +628,7 @@ val (c, d) = program.foldMap(interpreter)</code></pre>
             <pre class="fragment"><code class="hljs scala">import play.api.libs.json._
 
 case class Resident(name: String, age: Int, role: Option[String])
-implicit val residentFormat = Json.format[Resident]
+implicit val residentFormat = Json.format[Resident] // code generated by macro
 
 val resident = Resident(name="Fiver", age=4, role=None)
 val residentJson: JsValue = Json.toJson(resident)
@@ -633,11 +637,7 @@ val jsonString: JsValue = Json.parse("""{
                                        |  "name" : "Fiver",
                                        |  "age" : 4
                                        |}""".stripMargin)
-val residentFromJson: JsResult[Resident] = Json.fromJson[Resident](jsonString)
-residentFromJson match {
-  case JsSuccess(r: Resident, path: JsPath) => println("Name: " + r.name)
-  case e: JsError => println("Errors: " + JsError.toJson(e).toString())
-}</code></pre>
+val residentFromJson: JsResult[Resident] = Json.fromJson[Resident](jsonString)</code></pre>
             <aside class="notes"></aside>
           </section>
 
@@ -695,11 +695,50 @@ new Component(dependency)</code></pre>
 
           <section>
             <h2>there are no statements, only expressions</h2>
+            <p>and so we never need to use <b>return</b></p>
             <pre class="fragment"><code class="hljs scala">// no need to use var, return
 val r1 = if (condition) "some value" else "some other value"
 
 val r2 = for (i <- 0 to 100)
-  yield i * 2</code></pre>
+  yield i * 2
+
+def ok      = List(1, 2, 3).foldLeft(0) { _ + _ }         // 6
+def invalid = List(1, 2, 3).foldLeft(0) { return _ + _ }  // 1 !!!</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>there are no statements, only expressions</h2>
+            <p>and so we never need to use <b>return</b></p>
+            <pre class="fragment"><code class="hljs scala">// no need to use var, return
+val r1 = if (condition) "some value" else "some other value"
+
+val r2 = for (i <- 0 to 100)
+  yield i * 2
+
+def ok      = List(1, 2, 3).foldLeft(0) { _ + _ }         // 6
+def invalid = List(1, 2, 3).foldLeft(0) { return _ + _ }  // 1 !!!</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>using exception for error handling</h2>
+            <pre class="fragment"><code class="hljs scala">def doSomething: Int = 
+  if (condition) 1024
+  else throw new Exception("invalid result")
+
+val result = Try(doSomething) // we need to handle exception
+                              // (and be aware that the function throws it)</code></pre>
+            <pre class="fragment"><code class="hljs scala">def doSomething: Either[String, Int] =
+  if (condition) Right(1024)
+  else Left("invalid result")
+
+val result = doSomething // type indicate 2 possible results</code></pre>
+            <pre class="fragment"><code class="hljs scala">def doSomething: Validated[String, Int] =
+  if (condition) Validated.valid(1024)
+  else Validated.invalid("invalid result")
+
+val result = doSomething // possible error indicated by type even better</code></pre>
             <aside class="notes"></aside>
           </section>
 
@@ -710,7 +749,6 @@ val r2 = for (i <- 0 to 100)
               <li class="fragment">heavy violations of SOLID/DRY/YAGNI/... - never good</li>
               <li class="fragment">using mutable state in not-exceptional cases - a lot of optimizations can be achieved by changing used algorithms and data structures, and making data more CPU-cache friendly</li>
               <li class="fragment">using nulls - exception: interop with Java</li>
-              <li class="fragment">using exceptions for error handling - instead use: Either, Disjunction, Validators, ...</li>
             </ul>
             <aside class="notes"></aside>
           </section>
@@ -720,8 +758,8 @@ val r2 = for (i <- 0 to 100)
         <section>
           <h2>Summary</h2>
           <ul>
-            <li class="fragment">language and libraries let us greater power of expressions using functions</li>
-            <li class="fragment">just like in OOP harvesting whole power of a language requires learning some design patterns</li>
+            <li class="fragment">language and libraries give us greater power of expressions using functions</li>
+            <li class="fragment">harvesting the whole power of a language/paradigm requires learning some design patterns it uses</li>
             <li class="fragment">Java comes with some inherited baggage - in Scala we can avoid some solutions that Java just cannot get rid of</li>
           </ul>
         </section>
