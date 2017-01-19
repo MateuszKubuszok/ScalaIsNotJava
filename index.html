@@ -62,13 +62,13 @@
             <h2>var, val and type inferrence</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">void publish(
+                <td><pre class="fragment"><code class="hljs java">void publish(
     Message message,
     Publisher publisher) {
   Timestamp timestamp = makeTimestamp();
   publisher.send(message, timestamp);
 }</code></pre></td>
-                <td><pre><code class="hljs scala">def publish(
+                <td><pre class="fragment"><code class="hljs scala">def publish(
     message: Message
     publisher: Publisher): Unit = {
   val timestamp = makeTimestamp()
@@ -81,7 +81,7 @@
 
           <section>
             <h2>functions</h2>
-            <pre><code class="hljs scala">def myFun1(int: Int): String = int.toString
+            <pre class="fragment"><code class="hljs scala">def myFun1(int: Int): String = int.toString
 val myFun2: String => String = _.toUpperCase
 val myFun3 = myFun1 andThen myFun2
 List(1, 2, 3).map(myFun3)</code></pre>
@@ -90,7 +90,7 @@ List(1, 2, 3).map(myFun3)</code></pre>
 
           <section>
             <h2>pattern matching</h2>
-            <pre><code class="hljs scala">result match {
+            <pre class="fragment"><code class="hljs scala">result match {
   case Left(error)  => handleError(error)
   case Right(value) => handleResult(value)
 }</code></pre>
@@ -99,27 +99,25 @@ List(1, 2, 3).map(myFun3)</code></pre>
 
           <section>
             <h2>traits: sealed, ADT, mixins</h2>
-            <pre><code class="hljs scala">sealed trait Stack[T]
-case object Empty[T] extends Stack[T]
-case class Top[T](value: T, next: Stack[T])
-
-class Printer {
+            <pre class="fragment"><code class="hljs scala">sealed trait Stack[+T]
+case object Empty extends Stack[Nothing]
+case class Top[+T](value: T, next: Stack[T])</code></pre>
+            <pre class="fragment"><code class="hljs scala">class Printer {
   def result: List[Either[String, String]] = ???
   def print: Unit = result.foreach(println)
 }
-trait ErrorFilter { self: Printer => def result = super.result.filter(_.isRight) }
+trait ErrFilter { self: Printer => def result = super.result.filter(_.isRight) }
 trait OutputLimiter { self: Printer => def result = super.result.take(20) }
-new ResultPrinter with ErrorFilter with OutputLimiter</code></pre>
+new ResultPrinter with ErrFilter with OutputLimiter</code></pre>
             <aside class="notes"></aside>
           </section>
 
           <section>
             <h2>immutable data structures</h2>
-            <pre><code class="hljs scala">case class Cheese(name: String, weightInG: Double)
+            <pre class="fragment"><code class="hljs scala">case class Cheese(name: String, weightInG: Double)
 val cheese1 = Cheese("Gouda", 12.6)
-val cheese2 = cheese1.copy(name = "Cheddar")
-
-val list1 = "a" :: "b" :: "c" :: Nil
+val cheese2 = cheese1.copy(name = "Cheddar")</code></pre>
+            <pre class="fragment"><code class="hljs scala">val list1 = "a" :: "b" :: "c" :: Nil
 val list2 = list1 ++ List("d", "e", "f")</code></pre>
             <aside class="notes"></aside>
           </section>
@@ -128,12 +126,12 @@ val list2 = list1 ++ List("d", "e", "f")</code></pre>
             <h2>for comprehension</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs scala">for {
+                <td><pre class="fragment"><code class="hljs scala">for {
   i <- List(1, 2, 3)
   j <- List(4, 5, 6)
   k <- List(7, 8, 9)
 } yield i * j * k</code></pre></td>
-                <td><pre><code class="hljs scala">List(1, 2, 3) flatMap { i =>
+                <td><pre class="fragment"><code class="hljs scala">List(1, 2, 3) flatMap { i =>
   List(4, 5, 6) flatMap { j =>
     List(7, 8, 9) map { k =>
       i * j * k
@@ -142,27 +140,24 @@ val list2 = list1 ++ List("d", "e", "f")</code></pre>
 }</code></pre></td>
               </tr>
             </table>
-            <aside class="notes"></aside>
+            <aside class="notes">mention that Future in for is sequential by default</aside>
           </section>
 
           <section>
             <h2>Implicits</h2>
-            <pre><code class="hljs scala">implicit val context: ExecutionContext = ...
-def asyncResult(implicit ec: ExecutionContext): Future[String] = ???
-
-implicit class StringDecorator(string: String) {
-  
+            <pre class="fragment"><code class="hljs scala">implicit val context: ExecutionContext = ...
+def asyncResult(implicit ec: ExecutionContext): Future[String] = ???</code></pre>
+            <pre class="fragment"><code class="hljs scala">implicit class StringDecorator(string: String) {
   def cleanString = string.toLowerCase.trim
 }
-
-trait Nat[N <: Nat]
+"my string".cleanString</code></pre>
+            <pre class="fragment"><code class="hljs scala">trait Nat[N <: Nat]
 case object Zero extends Nat[Zero]
 case class Succ[N <: Nat](value: N) extends Nat[Nat[N]]
 implicit val natZero: Nat[Zero] = Zero
 implicit def natSucc[N <: Nat](implicit nat: N): Nat[N] = Succ(n)
-implicitly[Nat[Nat[Nat[Nat[Zero]]]]]
-
-def fun1[A, TypeClass[A]](value: A)(implicit: fa: TypeClass[A]): A = ...
+implicitly[Nat[Nat[Nat[Nat[Zero]]]]]</code></pre>
+            <pre class="fragment"><code class="hljs scala">def fun1[A](value: A)(implicit: fa: TypeClass[A]): A = ...
 def fun2[A : TypeClass](value: A): A = ...</code></pre>
             <aside class="notes"></aside>
           </section>
@@ -184,15 +179,14 @@ def fun2[A : TypeClass](value: A): A = ...</code></pre>
           
           <section>
             <h2>function composition</h2>
-            <td><pre><code class="hljs scala">def parseXml(input: String): XmlDocument
+            <td><pre class="fragment"><code class="hljs scala">def parseXml(input: String): XmlDocument
 def getUserDataNode(document: XmlDocument): XmlNode
 def extractUserData(node: XmlNode): MyUserData
 
 val extractUserDataFromInput = parseXml andThen
                                getUserDataNode andThen
-                               extractUserData
-
-val handleSome: PartialFunction[Option[String], Unit] = {
+                               extractUserData</code></pre>
+             <pre class="fragment"><code class="hljs scala">val handleSome: PartialFunction[Option[String], Unit] = {
   case Some(result) => println(s"Result is $result")
 }
 val handleNone: PartialFunction[Option[String], Unit] = {
@@ -205,36 +199,33 @@ val handleOption = handleSome orElse handleNone</code></pre></td>
           
           <section>
             <h2>typeclasses</h2>
-            <pre><code class="hljs scala">trait MyTypeclass[A] {
+            <pre class="fragment"><code class="hljs scala">trait MyTypeclass[A] {
   def prettyString(printed: A): String
-}
-
-implicit def typeclassForMap[K, V] = new MyTypeclass[Map[K, V]] {
+}</code></pre>
+            <pre class="fragment"><code class="hljs scala">implicit def typeclassForMap[K, V] = new MyTypeclass[Map[K, V]] {
   def prettyString(printed: Map[K, V]) =
     printed map { case (k, v) => s"($k -> $v)" } mkString "; "
 }
 implicit def typeclassForList[B] = new MyTypeclass[List[B]] {
   def prettyString(printed: List[B]) = s"(${printed mkString ", "})"
-}
-
-def printMe[A](toPrint: A)(implicit myTypeClass: MyTypeclass[A]) =
+}</code></pre>
+            <pre class="fragment"><code class="hljs scala">def printMe[A](toPrint: A)(implicit myTypeClass: MyTypeclass[A]) =
   myTypeClass.prettyString(toPrint)
 // alternatively
 def printMe[A : MyTypeclass](toPrint: A) =
-  implicitly[MyTypeclass[A]].prettyString(toPrint)
-
-printMe(List(1, 2, 3)) // (1, 2, 3)
+  implicitly[MyTypeclass[A]].prettyString(toPrint)</code></pre>
+            <pre class="fragment"><code class="hljs scala">printMe(List(1, 2, 3)) // (1, 2, 3)
 printMe(Map(1 -> 2, 3 -> 4)) // (1 -> 2); (3 -> 4)</code></pre>
             <aside class="notes"></aside>
           </section>
           
           <section>
             <h2>semigroup</h2>
-            <pre><code class="hljs scala">trait Semigroup[A] {
+            <pre class="fragment"><code class="hljs scala">trait Semigroup[A] {
   def combine(a1: A, a2: A): A
 }
 
-def listSemigroup[A] = new Semigroup[List[A]] {
+implicit def listSemigroup[A] = new Semigroup[List[A]] {
   def combine(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
 }</code></pre>
             <aside class="notes"></aside>
@@ -242,11 +233,11 @@ def listSemigroup[A] = new Semigroup[List[A]] {
           
           <section>
             <h2>monoid</h2>
-            <pre><code class="hljs scala">trait Monoid[A] extends Semigroup[A] {
+            <pre class="fragment"><code class="hljs scala">trait Monoid[A] extends Semigroup[A] {
   def zero: A
 }
 
-def listMonoid[A] = new Semigroup[List[A]] {
+implicit def listMonoid[A] = new Semigroup[List[A]] {
   def combine(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
   def zero: List[A] = List.empty
 }</code></pre>
@@ -255,11 +246,11 @@ def listMonoid[A] = new Semigroup[List[A]] {
           
           <section>
             <h2>functor</h2>
-            <pre><code class="hljs scala">trait Functor[F[_]] {
+            <pre class="fragment"><code class="hljs scala">trait Functor[F[_]] {
   def map[A, B](f: F[A], fun: A => B): F[B]
 }
 
-def listFunctor[A] = new Functor[List] {
+implicit def listFunctor[A] = new Functor[List] {
   def map[A, B](f: List[A], fun: A => B): List[B] = f map fun
 }</code></pre>
             <aside class="notes"></aside>
@@ -267,12 +258,12 @@ def listFunctor[A] = new Functor[List] {
           
           <section>
             <h2>monad</h2>
-            <pre><code class="hljs scala">trait Monad[F[_]] extends Functor[F] {
+            <pre class="fragment"><code class="hljs scala">trait Monad[F[_]] extends Functor[F] {
   def unit[A](a: A): F[A]
   def flatMap[A, B](f: F[A], fun: A => F[B]): F[B]
 }
 
-def listFunctor[A] = new Monad[List] {
+implicit def listFunctor[A] = new Monad[List] {
   def map[A, B](f: List[A], fun: A => B): List[B] = f map fun
   def unit[A](a: A): List[A] = List(a)
   def flatMap[A, B](f: List[A], fun: A => List[B]): List[B] = f flatMap fun
@@ -299,6 +290,8 @@ def listFunctor[A] = new Monad[List] {
               <li class="fragment"><a href="https://www.manning.com/books/functional-programming-in-scala">Functional Programming in Scala</a> - Paul Chiusano and Rúnar Bjarnason</li>
               <li class="fragment"><a href="https://leanpub.com/mastering-advanced-scala">Mastering Advanced Scala</a> - Denis Kalinin</li>
               <li class="fragment"><a href="http://fsharpforfunandprofit.com/fppatterns/">Functional Programming Design Patterns</a> - Scott Wlaschin</li>
+              <li class="fragment">cats documentation</li>
+              <li class="fragment">tons of great papers</li>
             </ul>
           </section>
         </section>
@@ -313,7 +306,7 @@ def listFunctor[A] = new Monad[List] {
             <h2>abstract factory/factory method</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">class ConfigFactory {
+                <td><pre class="fragment"><code class="hljs java">class ConfigFactory {
 
   MyConfig createConfig(
       Boolean isDebug,
@@ -323,7 +316,7 @@ def listFunctor[A] = new Monad[List] {
 new ConfigFactory()
     .createConfig(isDebug, flags);
 </code></pre></td>
-                <td><pre><code class="hljs scala">def createConfig(
+                <td><pre class="fragment"><code class="hljs scala">def createConfig(
     isDebug: Boolean,
     flags: Set[String]): MyConfig = { ... }
 
@@ -337,14 +330,14 @@ createConfig(isDebug, flags)</code></pre></td>
             <h2>builder</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">StringBuilder sb = new StringBuilder()
+                <td><pre class="fragment"><code class="hljs java">StringBuilder sb = new StringBuilder()
 for (String line : fileContent) {
   sb.append("line: ")
     .append(line)
     .append("\n");
 }
 String result = sb.toString;</code></pre></td>
-                <td><pre><code class="hljs scala">val result =
+                <td><pre class="fragment"><code class="hljs scala">val result =
 fileContent.foldLeft(List.empty[String]) {
   case (result, line) =>
     result :+ "line: " :+ line
@@ -358,7 +351,7 @@ fileContent.foldLeft(List.empty[String]) {
             <h2>builder</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">interface MyConfig {
+                <td><pre class="fragment"><code class="hljs java">interface MyConfig {
   Boolean isDebig();
   Set&lt;String&gt; getFlags();
 }
@@ -375,7 +368,7 @@ new MyConfigBuilder()
     .setDebug(true)
     .setFlags(flags)
     .build();</code></pre></td>
-                <td><pre><code class="hljs scala">case class MyConfig(
+                <td><pre class="fragment"><code class="hljs scala">case class MyConfig(
       isDebug: Boolean = false,
       flags: Set[String] = Set.empty)
 
@@ -392,7 +385,7 @@ MyConfig().copy(isDebug = true, flags = flags)
             <h2>lazy initialization</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">interface X {
+                <td><pre class="fragment"><code class="hljs java">interface X {
   String getResult;
 }
 
@@ -409,7 +402,7 @@ class LazyXProxy {
     return getX.getResult();
   }
 }</code></pre></td>
-                <td><pre><code class="hljs scala">trait X {
+                <td><pre class="fragment"><code class="hljs scala">trait X {
   def getResult: String
 }
 
@@ -423,7 +416,7 @@ lazy val lazyX: X = ...</code></pre></td>
             <h2>singleton</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">class Singleton {
+                <td><pre class="fragment"><code class="hljs java">class Singleton {
   private static Singleton self = null;
 
   private Singleton() {}
@@ -435,7 +428,7 @@ lazy val lazyX: X = ...</code></pre></td>
     return self;
   }
 }</code></pre></td>
-                <td><pre><code class="hljs scala">object Singleton</code></pre></td>
+                <td><pre class="fragment"><code class="hljs scala">object Singleton</code></pre></td>
               </tr>
             </table>
             <aside class="notes"></aside>
@@ -445,14 +438,14 @@ lazy val lazyX: X = ...</code></pre></td>
             <h2>command object</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">interface Command {
+                <td><pre class="fragment"><code class="hljs java">interface Command {
   void execute(target: Data);
 }
 
 class UpdateDataCommand extends Command {
   void execute(target: Data) { ... } 
 }</code></pre></td>
-                <td><pre><code class="hljs scala">trait Command extends (Data => Unit)
+                <td><pre class="fragment"><code class="hljs scala">trait Command extends (Data => Unit)
 
 case object UpdateData extends Command {
   def apply(target: Data): Unit = { ... }
@@ -467,7 +460,7 @@ case object UpdateData extends Command {
             <ul>
               <li class="fragment">futures</li>
               <li class="fragment">reactive programming in general</li>
-              <li class="fragment"><pre><code class="hljs scala">import rx._
+              <li class="fragment"><pre class="fragment"><code class="hljs scala">import rx._
 
 val a = Var(1); val b = Var(2)
 val c = Rx { a() + b() }
@@ -482,7 +475,7 @@ println(c.now) // 6</code></pre></li>
             <h2>decorator</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">interface X {
+                <td><pre class="fragment"><code class="hljs java">interface X {
   String getResult();
 }
 
@@ -498,7 +491,7 @@ class XDecorator {
     return getResult().toUpperCase();
   }
 }</code></pre></td>
-                <td><pre><code class="hljs scala">trait X {
+                <td><pre class="fragment"><code class="hljs scala">trait X {
   def getResult: String
 }
 
@@ -514,7 +507,7 @@ implicit class XDecorator(x: X) {
             <h2>template method</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">abstract class SeriousOperations {
+                <td><pre class="fragment"><code class="hljs java">abstract class SeriousOperations {
   void doSeriousStuff() {
     // doing things
     String nextResult =
@@ -530,7 +523,7 @@ class Implementation
   String templateMethod(
       String resultSoFar) { ... }
 }</code></pre></td>
-                <td><pre><code class="hljs scala">def seriousOperations(
+                <td><pre class="fragment"><code class="hljs scala">def seriousOperations(
   template: String => String
 ): Unit = {
   // doing things
@@ -546,7 +539,7 @@ class Implementation
             <h2>strategy</h2>
             <table>
               <tr>
-                <td><pre><code class="hljs java">interface PrintStrategy {
+                <td><pre class="fragment"><code class="hljs java">interface PrintStrategy {
   String print(Data data);
 }
 class XmlPrintStrategy
@@ -557,7 +550,7 @@ class JsonPrintStrategy
     extends PrintStrategy {
   String print(Data data) { ... }
 }</code></pre></td>
-                <td><pre><code class="hljs scala">val printXMl: Data => String = ...
+                <td><pre class="fragment"><code class="hljs scala">val printXMl: Data => String = ...
 val printJson: Data => String = ...</code></pre></td>
               </tr>
             </table>
@@ -566,7 +559,7 @@ val printJson: Data => String = ...</code></pre></td>
 
           <section>
             <h2>interpreter</h2>
-            <pre><code class="hljs scala">sealed trait CalcDSL[T]
+            <pre class="fragment"><code class="hljs scala">sealed trait CalcDSL[T]
 object CalcDSL {
   case class AskForInput(question: String) extends CalcDSL[Integer]
   case class PrintResult(result: String) extends CalcDSL[Unit]
@@ -585,7 +578,7 @@ object CalcDSL {
 
           <section>
             <h2>interpreter</h2>
-            <pre><code class="hljs scala">val interpreter = new (CalcDSL ~> Id) {
+            <pre class="fragment"><code class="hljs scala">val interpreter = new (CalcDSL ~> Id) {
   def apply[A](in: CalcDSL[A]): A = in match {
     case AskForInput(question) => println(question); StdIn.readInt()
     case PrintResult(result)   => println(result)
@@ -598,7 +591,7 @@ object CalcDSL {
 
           <section>
             <h2>interpreter</h2>
-            <pre><code class="hljs scala">val ops = new CalcDSL.Ops
+            <pre class="fragment"><code class="hljs scala">val ops = new CalcDSL.Ops
 val program = for {
   a <- ops.askForInput("a =")
   b <- ops.askForInput("b =")
@@ -628,7 +621,7 @@ val (c, d) = program.foldMap(interpreter)</code></pre>
 
           <section>
             <h2>example of macro generated code</h2>
-            <pre><code class="hljs scala">import play.api.libs.json._
+            <pre class="fragment"><code class="hljs scala">import play.api.libs.json._
 
 case class Resident(name: String, age: Int, role: Option[String])
 implicit val residentFormat = Json.format[Resident]
@@ -650,7 +643,7 @@ residentFromJson match {
 
           <section>
             <h2>example of type-level achievements</h2>
-            <pre><code class="hljs scala">import io.circe._
+            <pre class="fragment"><code class="hljs scala">import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
@@ -680,13 +673,13 @@ decode[Foo](foo.asJson.spaces4)
 
         <section>
           <section>
-            <h1>don't port bad practices ported from Java</h1>
+            <h1>don't port (bad) Java practices to Scala</h1>
             <aside class="notes">solid, null, deep inheritance, no need of mocks</aside>
           </section>
 
           <section>
             <h2>for DI rely on types instead of reflection</h2>
-            <pre><code class="hljs scala">bind(classOf[Dependency])
+            <pre class="fragment"><code class="hljs scala">bind(classOf[Dependency])
     .to(classOf[DependencyImpl])
 class Component @Inject (deps: Dependency) {}
 // what if Dependency is abstract
@@ -701,11 +694,23 @@ new Component(dependency)</code></pre>
           </section>
 
           <section>
-            <h2>there is no statements, only expressions</h2>
-            <pre><code class="hljs java"></code></pre>
+            <h2>there are no statements, only expressions</h2>
+            <pre class="fragment"><code class="hljs scala">// no need to use var, return
+val r1 = if (condition) "some value" else "some other value"
+
+val r2 = for (i <- 0 to 100)
+  yield i * 2</code></pre>
+            <aside class="notes"></aside>
+          </section>
+
+          <section>
+            <h2>other offenders</h2>
             <ul>
-              <li class="fragment">deep hierarchies</li>
-              <li class="fragment">classes breaking SOLID principles</li>
+              <li class="fragment">deep hierarchies - difference in behavior can injected as functions</li>
+              <li class="fragment">heavy violations of SOLID/DRY/YAGNI/... - never good</li>
+              <li class="fragment">using mutable state in not-exceptional cases - a lot of optimizations can be achieved by changing used algorithms and data structures, and making data more CPU-cache friendly</li>
+              <li class="fragment">using nulls - exception: interop with Java</li>
+              <li class="fragment">using exceptions for error handling - instead use: Either, Disjunction, Validators, ...</li>
             </ul>
             <aside class="notes"></aside>
           </section>
@@ -715,7 +720,9 @@ new Component(dependency)</code></pre>
         <section>
           <h2>Summary</h2>
           <ul>
-            <li class="fragment">S</li>
+            <li class="fragment">language and libraries let us greater power of expressions using functions</li>
+            <li class="fragment">just like in OOP harvesting whole power of a language requires learning some design patterns</li>
+            <li class="fragment">Java comes with some inherited baggage - in Scala we can avoid some solutions that Java just cannot get rid of</li>
           </ul>
         </section>
 
