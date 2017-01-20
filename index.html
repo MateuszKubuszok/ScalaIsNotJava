@@ -316,8 +316,7 @@ implicit def listFunctor[A] = new Monad[List] {
 }
 
 new ConfigFactory()
-    .createConfig(isDebug, flags);
-</code></pre></td>
+    .createConfig(isDebug, flags);</code></pre></td>
                 <td><pre class="fragment"><code class="hljs scala">def createConfig(
     isDebug: Boolean,
     flags: Set[String]): MyConfig = { ... }
@@ -338,7 +337,7 @@ for (String line : fileContent) {
     .append(line)
     .append("\n");
 }
-String result = sb.toString;</code></pre></td>
+String result = sb.toString();</code></pre></td>
                 <td><pre class="fragment"><code class="hljs scala">val result =
 fileContent.foldLeft(List.empty[String]) {
   case (result, line) =>
@@ -391,7 +390,7 @@ MyConfig().copy(isDebug = true, flags = flags)
   String getResult;
 }
 
-class LazyXProxy {
+class LazyXProxy extends X {
   private X inner = null;
 
   private X getX() {
@@ -481,7 +480,7 @@ println(c.now) // 6</code></pre></li>
   String getResult();
 }
 
-class XDecorator {
+class XDecorator extends X {
   private X x;
   XDecorator(X x) { this.x = x; }
 
